@@ -1,0 +1,39 @@
+version: "3.8"
+services:
+  ecs-local-endpoints:
+    image: amazon/amazon-ecs-local-container-endpoints:latest-amd64
+    volumes:
+      - /var/run:/var/run
+      - $HOME/.aws/:/home/.aws/
+    environment:
+      ECS_LOCAL_METADATA_PORT: "51679"
+      HOME: "/home"
+      AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION:-eu-west-1}
+      AWS_PROFILE: ${AWS_PROFILE:-default}
+#    ports:
+#      - 51679:51679
+    container_name: ecs-local-endpoints
+    network_mode: container:local-pause
+    depends_on:
+      - local-pause
+
+
+  zone-id:
+    environment:
+      AWS_CONTAINER_CREDENTIALS_RELATIVE_URI: "/creds"
+      ECS_CONTAINER_METADATA_URI: http://169.254.170.2/v3/containers/zone-id
+      AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION:-eu-west-1}
+      AWS_REGION: ${AWS_DEFAULT_REGION:-eu-west-1}
+    depends_on:
+      - ecs-local-endpoints
+      - local-pause
+    network_mode: container:local-pause
+
+  local-pause:
+    image: local-pause:latest
+    container_name: local-pause
+    build:
+      dockerfile: pause.Dockerfile
+      context: .local
+    cap_add:
+      - NET_ADMIN

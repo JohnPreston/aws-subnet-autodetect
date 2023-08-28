@@ -1,0 +1,7 @@
+services:
+  zone-id:
+    image: public.ecr.aws/johnpreston/rackid-setter:latest
+    build:
+      context: .
+      args:
+        JAR_FILE: target/spring-rackid-detect-1.0-SNAPSHOT-jar-with-dependencies.jar
