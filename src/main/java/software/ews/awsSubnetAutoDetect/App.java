@@ -21,7 +21,7 @@ public class App {
             client.close();
             return response.asString();
         } catch (Exception imds) {
-            System.out.println("Failed to retrieve EC2 Metadata");
+            System.err.println("Failed to retrieve EC2 Metadata");
             return null;
         }
     }
@@ -32,7 +32,7 @@ public class App {
             String metadata = ECSMetadataReader.getECSMetadata();
             return ECSMetadataReader.getSubnetCidrFromMetadata(metadata);
         } catch (Exception e) {
-            System.out.println("Failed to retrieve Subnet CIDR based on ECS Metadata");
+            System.err.println("Failed to retrieve Subnet CIDR based on ECS Metadata");
         }
         return null;
     }
@@ -42,8 +42,6 @@ public class App {
         String subnetId = getSubnetIdFromEC2Metadata();
         // if subnetId is not null from EC2 Metadata, then describe the Subnet directly
         if (subnetId != null) {
-
-            System.out.println("Detect subnet ID " + subnetId);
             try {
                 subnet = SubnetZoneIDRetriever.describeSubnet(subnetId);
             } catch (Ec2Exception e) {
@@ -61,11 +59,11 @@ public class App {
                 }
 
             } catch (Exception getSubnetException) {
-                System.out.println("Failed to retrieve Subnet CIDR based on ECS Metadata");
+                System.err.println("Failed to retrieve Subnet CIDR based on ECS Metadata");
             }
         }
         if (subnet == null) {
-            System.out.println("Failed to detect subnet");
+            System.err.println("Failed to detect subnet");
         }
         return subnet;
     }
@@ -74,13 +72,11 @@ public class App {
         // Main function to test the Subnet Zone ID Retriever in EC2 Instance/ECS Service
         Subnet subnet = getSubnet();
         if (subnet != null) {
-            while (true) {
-                try {
-                    System.out.println(subnet.availabilityZoneId());
-                    Thread.sleep(30000);
-                } catch (InterruptedException e) {
-                    System.out.println("Interrupted");
-                }
+            try {
+                System.out.println(subnet.availabilityZoneId());
+                System.exit(0);
+            } catch (Exception e) {
+                System.err.println("Interrupted");
             }
         }
     }
